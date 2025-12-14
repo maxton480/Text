@@ -1,0 +1,71 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Webtoon OCR – Bulk Image Text Extractor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Tesseract.js -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .box {
+      max-width: 900px;
+      margin: auto;
+      background: #020617;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    input, button {
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #22c55e;
+      color: #022c22;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #334155;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+    textarea {
+      width: 100%;
+      height: 250px;
+      background: #020617;
+      color: #e5e7eb;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+    .progress {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #38bdf8;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <h1>📖 Webtoon / Comic OCR Tool</h1>
+  <div class="box">
+    <p>Bulk images upload karo (Webtoon/Comic panels). Exact text extract hoga aur 
