@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Webtoon Pages</title>
+<style>
+body{margin:0;background:#111;color:#fff;font-family:sans-serif}
+header{position:sticky;top:0;background:#000;padding:10px}
+img{width:100%;display:block}
+.page{margin:0}
+</style>
+</head>
+<body>
+<header>
+<input type="file" id="upload" multiple accept="image/*">
+<button onclick="go()">Open Eraser</button>
+</header>
+<div id="list"></div>
+
+
+<script>
+let files=[];
+upload.onchange=e=>{
+files=[...e.target.files];
+localStorage.setItem('files',JSON.stringify([]));
+const list=document.getElementById('list');list.innerHTML='';
+files.forEach(f=>{
+const img=document.createElement('img');
+img.src=URL.createObjectURL(f);
+list.appendChild(img);
+});
+localStorage.setItem('count',files.length);
+files.forEach((f,i)=>{
+const r=new FileReader();
+r.onload=()=>localStorage.setItem('img'+i,r.result);
+r.readAsDataURL(f);
+});
+};
+function go(){location.href='eraser.html';}
+</script>
+</body>
+</html>
