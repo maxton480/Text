@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eraser</title>
+<style>
+body{margin:0;background:#000}
+header{position:sticky;top:0;background:#111;padding:8px;color:#fff}
+canvas{width:100%;display:block;touch-action:none}
+</style>
+</head>
+<body>
+<header>
+Brush <input type="range" id="b" min="5" max="60" value="25">
+<button onclick="save()">Save</button>
+</header>
+<div id="wrap"></div>
+
+
+<script>
+const wrap=document.getElementById('wrap');
+const count=+localStorage.getItem('count');
+let canvases=[];
+
+
+for(let i=0;i<count;i++){
+const img=new Image();
+img.onload=()=>{
+const c=document.createElement('canvas');
+c.width=img.width;c.height=img.height;
+const ctx=c.getContext('2d');
+ctx.drawImage(img,0,0);
+enableErase(c,ctx);
+wrap.appendChild(c);
+canvases.push(c);
+};
+img.src=localStorage.getItem('img'+i);
+}
+
+
+function enableErase(c,ctx){
+let draw=false;
+c.onpointerdown=()=>draw=true;
+c.onpointerup=()=>{draw=false;ctx.globalCompositeOperation='source-over'};
+c.onpointermove=e=>{
+if(!draw) return;
+const r=c.getBoundingClientRect();
+const x=(e.clientX-r.left)*(c.width/r.width);
+const y=(e.clientY-r.top)*(c.height/r.height);
+ctx.globalCompositeOperation='destination-out';
+ctx.beginPath();
+ctx.arc(x,y,b.value,0,Math.PI*2);
+ctx.fill();
+};
+}
+
+
+function save(){
+canvases.forEach((c,i)=>{
+localStorage.setItem('out'+i,c.toDataURL('image/png'));
+});
+alert('Saved');
+}
+</script>
+</body>
+</html>
