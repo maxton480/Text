@@ -1,0 +1,111 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Webtoon Image Splitter (Total Output Mode)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; padding:20px }
+    h1 { font-size:22px }
+    .box { background:#020617; padding:15px; border-radius:10px; margin-bottom:15px }
+    input,button { width:100%; margin-top:10px; padding:10px; border-radius:8px; border:none }
+    button { background:#2563eb; color:white; cursor:pointer }
+    button:hover { background:#1d4ed8 }
+    #log { font-size:13px; margin-top:10px; color:#93c5fd }
+  </style>
+</head>
+<body><h1>Webtoon Smart Image Splitter (Total Output Based)</h1><div class="box">
+  <label>Upload Long Images (Bulk)</label>
+  <input type="file" id="images" multiple accept="image/*" />
+</div><div class="box">
+  <label>Total Output Images Required (e.g. 60)</label>
+  <input type="number" id="totalOutputs" value="60" min="1" />
+</div><div class="box">
+  <button onclick="splitImages()">Split & Download ZIP</button>
+  <div id="log"></div>
+</div><script>
+async function splitImages() {
+  const files = [...document.getElementById('images').files];
+  const totalOutputs = parseInt(document.getElementById('totalOutputs').value);
+  const log = document.getElementById('log');
+
+  if (files.length === 0) {
+    alert('Please upload images');
+    return;
+  }
+
+  // Load all images first
+  const images = await Promise.all(files.map(loadImage));
+
+  // Calculate total height of all images combined
+  const totalHeight = images.reduce((sum, img) => sum + img.height, 0);
+  const maxWidth = Math.max(...images.map(img => img.width));
+
+  // Height per piece so that TOTAL outputs = user input
+  const pieceHeight = Math.floor(totalHeight / totalOutputs);
+
+  const zip = new JSZip();
+  let outputIndex = 1;
+  let carryCanvas = document.createElement('canvas');
+  let carryCtx = carryCanvas.getContext('2d');
+  carryCanvas.width = maxWidth;
+  carryCanvas.height = 0;
+
+  let remainingHeight = totalHeight;
+
+  for (const img of images) {
+    let y = 0;
+    while (y < img.height) {
+      const need = pieceHeight - carryCanvas.height;
+      const available = img.height - y;
+      const drawH = Math.min(need, available);
+
+      // Expand canvas if needed
+      const temp = document.createElement('canvas');
+      temp.width = maxWidth;
+      temp.height = carryCanvas.height + drawH;
+      const tctx = temp.getContext('2d');
+      tctx.drawImage(carryCanvas, 0, 0);
+      tctx.drawImage(img, 0, y, img.width, drawH, 0, carryCanvas.height, img.width, drawH);
+
+      carryCanvas = temp;
+      carryCtx = tctx;
+
+      y += drawH;
+
+      if (carryCanvas.height >= pieceHeight && outputIndex < totalOutputs) {
+        const blob = await new Promise(res => carryCanvas.toBlob(res, 'image/webp', 0.9));
+        const name = `output_${String(outputIndex).padStart(3, '0')}.webp`;
+        zip.file(name, blob);
+        outputIndex++;
+
+        carryCanvas = document.createElement('canvas');
+        carryCanvas.width = maxWidth;
+        carryCanvas.height = 0;
+        carryCtx = carryCanvas.getContext('2d');
+      }
+    }
+  }
+
+  // Last remainder
+  if (carryCanvas.height > 0) {
+    const blob = await new Promise(res => carryCanvas.toBlob(res, 'image/webp', 0.9));
+    const name = `output_${String(outputIndex).padStart(3, '0')}.webp`;
+    zip.file(name, blob);
+  }
+
+  const content = await zip.generateAsync({ type: 'blob' });
+  saveAs(content, 'split_outputs.zip');
+  log.innerText = `✅ Done! Total Outputs: ${totalOutputs}`;
+}
+
+function loadImage(file) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.src = URL.createObjectURL(file);
+  });
+}
+</script></body>
+</html>
